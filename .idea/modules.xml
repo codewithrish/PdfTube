@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FragCom.iml" filepath="$PROJECT_DIR$/FragCom.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PdfTube.iml" filepath="$PROJECT_DIR$/PdfTube.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -3,6 +3,8 @@ package com.searchresults.fragcom.youtube;
 import android.app.Application;
 import android.content.Context;
 
+import com.searchresults.fragcom.R;
+
 /**
  * This is the application class that holds the application level data
  * Created by ravikumar on 10/20/2014.
@@ -22,6 +24,6 @@ public class LatentLoaderApplication extends Application {
     }
 
     public static String appName() {
-        return "YouTubeResults";
+        return getAppContext().getString(R.string.app_name);
     }
 }

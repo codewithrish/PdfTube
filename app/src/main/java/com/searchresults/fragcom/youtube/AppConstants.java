@@ -3,10 +3,10 @@ package com.searchresults.fragcom.youtube;
 import com.google.android.gms.common.Scopes;
 import com.google.api.services.youtube.YouTubeScopes;
 
-/**
- * Created by ravikumar on 10/20/2014.
- */
 public interface AppConstants {
+
+    public static final String pdfText = "";
+
     public static final int SEARCH_VIDEO = 1;
 
     public static final int PICKFILE_RESULT_CODE = 1;

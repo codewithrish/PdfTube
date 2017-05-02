@@ -22,6 +22,8 @@ import android.widget.Toast;
 import com.searchresults.fragcom.fragments.OneFragment;
 import com.searchresults.fragcom.fragments.ThreeFragment;
 import com.searchresults.fragcom.fragments.TwoFragment;
+import com.searchresults.fragcom.nlp.ApiFragment;
+import com.searchresults.fragcom.nlp.EntityInfo;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -48,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.animate().translationY(-toolbar.getBottom()).setInterpolator(new AccelerateInterpolator()).start();
-        toolbar.animate().translationY(0).setInterpolator(new DecelerateInterpolator()).start();
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
@@ -139,5 +139,4 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 }

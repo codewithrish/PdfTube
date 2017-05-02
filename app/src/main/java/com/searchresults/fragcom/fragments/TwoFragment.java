@@ -13,6 +13,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,16 +29,25 @@ import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerFragment;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
+import com.itextpdf.text.pdf.parser.SimpleTextExtractionStrategy;
+import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
 import com.searchresults.fragcom.MainActivity;
 import com.searchresults.fragcom.R;
 import com.searchresults.fragcom.TextChangedEvent;
 import com.searchresults.fragcom.youtube.AppConstants;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import static com.searchresults.fragcom.youtube.AppConstants.PICKFILE_RESULT_CODE;
 
@@ -45,9 +55,9 @@ import static com.searchresults.fragcom.youtube.AppConstants.PICKFILE_RESULT_COD
  * Created by risha on 3/9/2017.
  */
 
-public class TwoFragment extends Fragment  {
+public class TwoFragment extends Fragment {
 
-    public static String VIDEO_ID = "0h3NeVv8AGg";
+    public static String VIDEO_ID = "J8EzIdaCRVg";
 
 
     View view = null;
@@ -59,7 +69,6 @@ public class TwoFragment extends Fragment  {
     private YouTubePlayer YPlayer;
     private static final int RECOVERY_DIALOG_REQUEST = 1;
 
-    YouTubePlayerFragment youTubePlayerFragment;
 
     YouTubePlayerSupportFragment mYoutubePlayerFragment;
 
@@ -133,6 +142,7 @@ public class TwoFragment extends Fragment  {
         }
     }
 
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(TextChangedEvent event) {
         //tv.setText(event.newText);
@@ -180,6 +190,8 @@ public class TwoFragment extends Fragment  {
                     youtube_player.setVisibility(View.VISIBLE);
                     item.setIcon(R.drawable.ic_expand_less_white_24px);
                 }
+                break;
+
         }
         return true;
     }
@@ -194,10 +206,13 @@ public class TwoFragment extends Fragment  {
             Uri pdfPath = data.getData();
             Toast.makeText(getActivity(), pdfPath.toString(), Toast.LENGTH_SHORT).show();
             pdfView.fromUri(pdfPath).load();
+
+
         } else {
             //Toast.makeText(getContext(), "No File Choosen", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     @Override
     public void onDetach() {
