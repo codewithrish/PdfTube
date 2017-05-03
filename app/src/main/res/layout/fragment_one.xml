@@ -26,6 +26,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <TextView
+                android:id="@+id/status"
+                android:layout_marginLeft="15dp"
+                android:textSize="18dp"
+                android:layout_gravity="center_vertical"
+                android:text="Click To Get Suggestions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <ImageButton
                 android:id="@+id/analyze"
                 android:layout_width="56dp"
@@ -79,7 +88,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:indeterminate="true"
-            android:visibility="invisible"/>
+            android:visibility="invisible" />
 
     </FrameLayout>
 

@@ -21,12 +21,15 @@ import android.widget.Toast;
 import com.google.api.services.youtube.model.SearchResult;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.searchresults.fragcom.R;
-import com.searchresults.fragcom.TextChangedEvent;
+import com.searchresults.fragcom.events.SearchKeyWordEvent;
+import com.searchresults.fragcom.events.TextChangedEvent;
 import com.searchresults.fragcom.connections.ServerResponseListener;
 import com.searchresults.fragcom.connections.ServiceTask;
 import com.searchresults.fragcom.youtube.YtAdapter;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +52,8 @@ public class ThreeFragment extends Fragment implements AdapterView.OnItemClickLi
 
     private MaterialSearchView searchView;
 
+    EventBus bus = EventBus.getDefault();
+
     public ThreeFragment() {
         // Required empty public constructor
     }
@@ -64,6 +69,10 @@ public class ThreeFragment extends Fragment implements AdapterView.OnItemClickLi
                              Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
+
+        if(!bus.isRegistered(this)) {
+            bus.register(this);
+        }
 
         if(view == null) {
             view = inflater.inflate(R.layout.fragment_three, container, false);
@@ -104,12 +113,14 @@ public class ThreeFragment extends Fragment implements AdapterView.OnItemClickLi
                 //Do some magic
                 return false;
             }
+
         });
 
         searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
             @Override
             public void onSearchViewShown() {
                 //Do some magic
+                searchView.setVisibility(View.VISIBLE);
                 EventBus bus = EventBus.getDefault();
                 bus.post(new TextChangedEvent("hide"));
             }
@@ -256,6 +267,20 @@ public class ThreeFragment extends Fragment implements AdapterView.OnItemClickLi
 
                 break;
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(SearchKeyWordEvent event) {
+        //tv.setText(event.newText);
+
+        final String searchKeyword = event.newText.toString();
+
+        if(event.newText.equals(searchKeyword)) {
+
+            search(searchKeyword);
+            //Toast.makeText(getContext(), "Check Third Tab", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
 }

@@ -3,9 +3,6 @@ package com.searchresults.fragcom;
 import android.graphics.PorterDuff;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -15,22 +12,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.Toast;
 
+import com.searchresults.fragcom.events.TextChangedEvent;
 import com.searchresults.fragcom.fragments.OneFragment;
 import com.searchresults.fragcom.fragments.ThreeFragment;
 import com.searchresults.fragcom.fragments.TwoFragment;
-import com.searchresults.fragcom.nlp.ApiFragment;
-import com.searchresults.fragcom.nlp.EntityInfo;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 

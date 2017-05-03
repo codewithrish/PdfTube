@@ -2,6 +2,8 @@ package com.searchresults.fragcom.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,27 +21,34 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.searchresults.fragcom.R;
+import com.searchresults.fragcom.RecyclerItemClickListener;
+import com.searchresults.fragcom.events.SearchKeyWordEvent;
+import com.searchresults.fragcom.events.SendUriData;
 import com.searchresults.fragcom.nlp.AccessTokenLoader;
 import com.searchresults.fragcom.nlp.ApiFragment;
 import com.searchresults.fragcom.nlp.EntityInfo;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
 import java.io.IOException;
 
-import static com.searchresults.fragcom.AppConstants.INPUT;
+import static com.searchresults.fragcom.R.id.viewpager;
 
 
 /**
  * Created by risha on 5/1/2017.
  */
 
-public class OneFragment extends Fragment implements ApiFragment.Callback{
+public class OneFragment extends Fragment implements ApiFragment.Callback, View.OnClickListener{
 
     private static final String FRAGMENT_API = "api";
 
@@ -53,7 +63,6 @@ public class OneFragment extends Fragment implements ApiFragment.Callback{
                 // The icon button is clicked; start analyzing the input.
                 case R.id.analyze:
                     startAnalyze();
-                    Toast.makeText(getActivity(), "This", Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -73,10 +82,25 @@ public class OneFragment extends Fragment implements ApiFragment.Callback{
 
     private EntityInfo entities[];
 
+    private TextView status;
+
+    private RecyclerView list;
+
+    private static EntityInfo[] mEntities;
+
+    EventBus bus = EventBus.getDefault();
+
+    private Uri pdfUri = null;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
+        if(!bus.isRegistered(this)) {
+            bus.register(this);
+        }
+
         if(view == null) {
             view = inflater.inflate(R.layout.fragment_one, container, false);
             view.findViewById(R.id.analyze).setOnClickListener(mOnClickListener);
@@ -84,13 +108,33 @@ public class OneFragment extends Fragment implements ApiFragment.Callback{
             mIntroduction = view.findViewById(R.id.introduction);
             mResults = view.findViewById(R.id.results);
             mProgress = view.findViewById(R.id.progress);
+            status = (TextView) view.findViewById(R.id.status);
 
-            RecyclerView list = (RecyclerView)view.findViewById(R.id.list);
+            list = (RecyclerView)view.findViewById(R.id.list);
             list.setLayoutManager(new LinearLayoutManager(getActivity()));
 
 
             mAdapter = new OneFragment.EntitiesAdapter(getActivity(), entities);
             list.setAdapter(mAdapter);
+
+            list.addOnItemTouchListener(
+                    new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
+                        @Override public void onItemClick(View view, int position) {
+
+                            String s = mEntities[position].name;
+                            //Toast.makeText(getContext(), s, Toast.LENGTH_SHORT).show();
+
+                            EventBus bus = EventBus.getDefault();
+                            bus.post(new SearchKeyWordEvent(s));
+
+                            ViewPager vp=(ViewPager) getActivity().findViewById(viewpager);
+                            vp.setCurrentItem(2);
+                            //Toast.makeText(getContext(), "Hello Dude", Toast.LENGTH_SHORT).show();
+                            //ViewHolder item= ;
+                            //Toast.makeText(getContext(), item.name + " is selected!", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+            );
 
 
             FragmentManager fm = getChildFragmentManager();
@@ -160,39 +204,48 @@ public class OneFragment extends Fragment implements ApiFragment.Callback{
         this.entities = entities;
     }
 
+    private String evaluate;
+
     private void startAnalyze() {
 
         showProgress();
-
-        //final String text = mInput.getText().toString();
-        getApiFragment().analyzeEntities(stripText());
+        new ExtractTextFromPdf().execute();
+        //getApiFragment().analyzeEntities("");
     }
 
-    public String stripText() {
-        String parsedText = null;
-        PDDocument document = null;
-        try {
-            document = PDDocument.load(getActivity().getAssets().open("resume.pdf"));
-        } catch(IOException e) {
-            e.printStackTrace();
+    @Override
+    public void onClick(View v) {
+        int itemPosition = list.indexOfChild(v);
+        Log.e("Clicked",String.valueOf(itemPosition));
+    }
+
+    private class ExtractTextFromPdf extends AsyncTask<String, Integer, String> {
+
+        protected String doInBackground(String... urls) {
+            return stripText();
         }
 
-        try {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            pdfStripper.setStartPage(0);
-            pdfStripper.setEndPage(1);
-            parsedText = "Parsed text: " + pdfStripper.getText(document);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (document != null) document.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        protected void onProgressUpdate(Integer... progress) {
+            //setProgressPercent(progress[0]);
+
         }
-        return parsedText;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            status.setText("Extracting Text ...");
+        }
+
+        protected void onPostExecute(String result) {
+            status.setText("Getting Suggestions ...");
+            getApiFragment().analyzeEntities(result);
+            status.setText("Click To Get Suggestions");
+            //status.setText("Result Calculated");
+            Toast.makeText(getContext(), "Result Calculated", Toast.LENGTH_SHORT).show();
+        }
     }
+
+
 
     private void showResults() {
         mIntroduction.setVisibility(View.GONE);
@@ -262,7 +315,7 @@ public class OneFragment extends Fragment implements ApiFragment.Callback{
     private static class EntitiesAdapter extends RecyclerView.Adapter<OneFragment.ViewHolder> {
 
         private final Context mContext;
-        private EntityInfo[] mEntities;
+
 
         public EntitiesAdapter(Context context, EntityInfo[] entities) {
             mContext = context;
@@ -293,5 +346,51 @@ public class OneFragment extends Fragment implements ApiFragment.Callback{
             mEntities = entities;
             notifyDataSetChanged();
         }
+    }
+
+    public String stripText() {
+        String parsedText = null;
+        PDDocument document = null;
+
+        try {
+            if(pdfUri == null) {
+                document = PDDocument.load(getActivity().getAssets().open("resume.pdf"));
+            } else  {
+                // pdfUri.getPath()).toString()
+                document = PDDocument.load(new File(pdfUri.getPath().toString()).getAbsoluteFile());
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            PDFTextStripper pdfStripper = new PDFTextStripper();
+            pdfStripper.setStartPage(0);
+            pdfStripper.setEndPage(1);
+            parsedText = "Parsed text: " + pdfStripper.getText(document);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (document != null) document.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        Log.i("Parsed Text", parsedText);
+        return parsedText;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(SendUriData event) {
+        //tv.setText(event.newText);
+
+        Uri pdfPath = event.uri;
+
+        pdfUri = pdfPath;
+
+        Toast.makeText(getContext(), new File(pdfUri.getPath()).toString(), Toast.LENGTH_LONG).show();
+
     }
 }

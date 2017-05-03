@@ -1,19 +1,12 @@
 package com.searchresults.fragcom.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,32 +15,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
-import com.google.android.youtube.player.YouTubePlayerFragment;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
-import com.itextpdf.text.pdf.parser.SimpleTextExtractionStrategy;
-import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
-import com.searchresults.fragcom.MainActivity;
 import com.searchresults.fragcom.R;
-import com.searchresults.fragcom.TextChangedEvent;
+import com.searchresults.fragcom.events.SendUriData;
+import com.searchresults.fragcom.events.TextChangedEvent;
 import com.searchresults.fragcom.youtube.AppConstants;
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 
 import static com.searchresults.fragcom.youtube.AppConstants.PICKFILE_RESULT_CODE;
 
@@ -90,7 +70,9 @@ public class TwoFragment extends Fragment {
                              Bundle savedInstanceState) {
 
 
-        bus.register(this);
+        if(!bus.isRegistered(this)) {
+            bus.register(this);
+        }
 
         if(view == null) {
             view = inflater.inflate(R.layout.fragment_two, container, false);
@@ -114,7 +96,8 @@ public class TwoFragment extends Fragment {
                     YPlayer.setPlaybackEventListener(playbackEventListener);
 
                     if(!wasRestore) {
-                        YPlayer.cueVideo(VIDEO_ID);
+                        //YPlayer.cueVideo(VIDEO_ID);
+                        YPlayer.cuePlaylist("PLwWN0hfJ1m9trV2yDJ4w0T0ojwR3zV6H6");
                     }
                 }
 
@@ -206,6 +189,9 @@ public class TwoFragment extends Fragment {
             Uri pdfPath = data.getData();
             Toast.makeText(getActivity(), pdfPath.toString(), Toast.LENGTH_SHORT).show();
             pdfView.fromUri(pdfPath).load();
+
+            EventBus bus = EventBus.getDefault();
+            bus.post(new SendUriData(pdfPath));
 
 
         } else {
